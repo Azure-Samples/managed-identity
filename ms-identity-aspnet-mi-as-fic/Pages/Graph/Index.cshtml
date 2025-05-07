@@ -2,7 +2,7 @@
 @model MiFicExamples.Pages.Graph.IndexModel
 @{
     ViewData["Title"] = "Home page";
-    string name = ViewData["name"] as string;
+    string name = ViewData["name"] as string ?? string.Empty;
 }
 
 <div class="text-center">

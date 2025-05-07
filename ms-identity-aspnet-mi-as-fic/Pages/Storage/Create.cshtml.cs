@@ -11,6 +11,7 @@ namespace MiFicExamples.Pages.AzureStorage
         public CreateModel(MiFicExamples.Data.CommentsContext context)
         {
             _context = context;
+            Comment = new();
         }
         public IActionResult OnGet()
         {

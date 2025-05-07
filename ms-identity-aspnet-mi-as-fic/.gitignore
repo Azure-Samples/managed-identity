@@ -22,3 +22,5 @@ wwwroot/
 *.db
 *.zip
 local.*
+
+appsettings.*.json

@@ -1,5 +1,9 @@
 # Using managed identity as an App credential.
-This sample demonstrates using a managed identity to authenticate an app. Find more details on how to use this feature refer to [Configuring an application to trust a managed identity](https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation-config-app-trust-managed-identity)
+This .NET sample demonstrates using a managed identity to authenticate an app. 
+
+Find more details on how to use this feature refer to [Configuring an application to trust a managed identity](https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation-config-app-trust-managed-identity)
+
+> Code snippets for other languages can be found in this article: [Implementation guide and code snippets](guide-and-snippets.md)
 
 This sample includes 3 scenarios using a managed identity as an App credential:
 1) Authenticationg users and accessing Microsoft Graph on their behalf, using Microsoft.Identity.Web.
@@ -36,48 +40,25 @@ Alternatively, you can adapt the script to only provision the resources you need
 1. Clone the repository to your local environment.
 2. Navigate to the `./Setup` folder.
 2. Update the script parameters as needed:
-   - `TENANT`: Your Azure AD Tenant ID.
-   - `SUBSCRIPTION`: Your Azure Subscription ID.
-   - `RESOURCE_PREFIX`: A custom prefix for naming Azure resources.
+   - `RESOURCE_PREFIX`: A prefix that will be used to name all the Azure resources.
    - `LOCATION`: The Azure region for resource deployment.
-   - `KV_TENANT` and `KV_SUBSCRIPTION`: Optional parameters for setting up a Key Vault in another tenant.
+   - `REMOTE_KV_TENANT` and `REMOTE_KV_SUBSCRIPTION`: Optional parameters for setting up a Key Vault in another tenant.
 
-### Example Execution
+### Example execution
 ```powershell
 .\setup.ps1 -TENANT "your-tenant-id" -SUBSCRIPTION "your-subscription-id" -RESOURCE_PREFIX "SampleApp" -LOCATION "eastus"
 ```
 
-## **Step 2: Deploy the Application**
-After resource provisioning, deploy your application code to Azure:
+This will create all resources and deploy the app to Azure.
 
-Build the application:
 
-```bash
-dotnet publish --configuration Release --output ./publish
-Compress the output:
-```
-
-Create a .zip archive to deploy on Azure.
-```bash
-Compress-Archive -Path ./publish/* -DestinationPath ./package.zip -force
-```
-
-Deploy to the Web App:
-Find the created resource group and web app names in the generated appsettings.json file's `MetadataOnly` section and use them in the following command to deploy the .zip folder.
-
-```bash
-
-az webapp deployment source config-zip --resource-group <ResourceGroupName> --name <WebAppName> --src ./package.zip
-```
----
-
-## **Step 3: Browse the web app**
+## **Step 2: Browse the web app**
 Now navigate to your web app url. If unsure, you should find the url in the `MetadataOnly` section in your appsettings.
 
 You should see the following page.
 ![alt text](./assets/image.png)
 
-## **Step 4: Clean Up Resources**
+## **Step 3: Clean Up Resources**
 After testing, clean up resources to avoid incurring charges:
 
 ```bash

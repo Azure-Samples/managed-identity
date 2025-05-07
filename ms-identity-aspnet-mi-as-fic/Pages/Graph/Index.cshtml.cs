@@ -26,32 +26,25 @@ namespace MiFicExamples.Pages.Graph
 
         public async Task OnGetAsync()
         {
-            try
-            {
-                var user = await _graphServiceClient.Me.GetAsync();
-                ViewData["Me"] = user;
-                ViewData["name"] = user.DisplayName;
+            var user = await _graphServiceClient.Me.GetAsync();
+            ViewData["Me"] = user;
+            ViewData["name"] = user?.DisplayName;
 
-                using (var photoStream = await _graphServiceClient.Me.Photo.Content.GetAsync())
-                {
-                    if (photoStream != null)
-                    {
-                        MemoryStream ms = new MemoryStream();
-                        photoStream.CopyTo(ms);
-                        byte[] buffer = ms.ToArray();
-                        ViewData["photo"] = Convert.ToBase64String(buffer);
-                        
-                    }
-                    else
-                    {
-                        ViewData["photo"] =  null;
-                    }
-                }
-            }
-            catch (Exception ex)
+            using (var photoStream = await _graphServiceClient.Me.Photo.Content.GetAsync())
             {
-                ViewData["photo"] = null;
-            }
+                if (photoStream != null)
+                {
+                    MemoryStream ms = new MemoryStream();
+                    photoStream.CopyTo(ms);
+                    byte[] buffer = ms.ToArray();
+                    ViewData["photo"] = Convert.ToBase64String(buffer);
+                    
+                }
+                else
+                {
+                    ViewData["photo"] =  null;
+                }
+            }            
         }
     }
 }

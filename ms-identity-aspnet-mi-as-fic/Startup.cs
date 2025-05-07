@@ -35,7 +35,7 @@ namespace MiFicExamples
         {
 
             services.AddOptions();
-            string[] initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+            string[] initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ') ?? Array.Empty<string>();
 
 
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)

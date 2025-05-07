@@ -11,9 +11,10 @@ namespace MiFicExamples.Pages.AzureStorage
         public IndexModel(MiFicExamples.Data.CommentsContext context)
         {
             _context = context;
+            Comments = new List<Comment>();
         }
 
-        public IList<Comment>? Comments { get; set; }
+        public IList<Comment> Comments { get; set; }
         public async Task OnGetAsync()
         {
             Comments = await _context.GetComments();

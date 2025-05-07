@@ -2,8 +2,8 @@
 {
     public class Comment
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
-        public string UserComment { get; set; }
+        public string UserComment { get; set; } = "";
     }
 }

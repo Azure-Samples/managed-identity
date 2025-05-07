@@ -11,6 +11,11 @@ namespace MiFicExamples.Helpers
     {
         static async Task<BlobContainerClient> GetBlobClientUsingMiFic(string managedIdentityClientId, string tenantId, string appClientId, string accountName, string containerName)
         {
+            ArgumentException.ThrowIfNullOrEmpty(managedIdentityClientId);
+            ArgumentException.ThrowIfNullOrEmpty(tenantId);
+            ArgumentException.ThrowIfNullOrEmpty(appClientId);
+            ArgumentException.ThrowIfNullOrEmpty(accountName);
+            ArgumentException.ThrowIfNullOrEmpty(containerName);
             
             // Construct the blob container endpoint from the arguments.
             string containerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
@@ -32,20 +37,42 @@ namespace MiFicExamples.Helpers
                     return accessToken.Token;
                 });
 
-
             // Get a credential and create a client object for the blob container.
-            return new BlobContainerClient(new Uri(containerEndpoint), assertion);
+            var containerClient = new BlobContainerClient(new Uri(containerEndpoint), assertion);
+            
+            // Verify the connection by checking if the container exists
+            await containerClient.ExistsAsync().ConfigureAwait(false);
+            
+            return containerClient;
+        }
+
+        private static async Task<BlobContainerClient> GetContainerClient(IConfiguration entraIdConfig, AzureStorageConfig azureStorageConfig)
+        {
+            ArgumentNullException.ThrowIfNull(entraIdConfig);
+            ArgumentNullException.ThrowIfNull(azureStorageConfig);
+
+            var managedIdentityClientId = entraIdConfig["AzureAd:ClientCredentials:0:ManagedIdentityClientId"] 
+                ?? throw new InvalidOperationException("ManagedIdentityClientId configuration is missing");
+            var tenantId = entraIdConfig["AzureAd:TenantId"] 
+                ?? throw new InvalidOperationException("TenantId configuration is missing");
+            var clientId = entraIdConfig["AzureAd:ClientId"] 
+                ?? throw new InvalidOperationException("ClientId configuration is missing");
+            
+            ArgumentException.ThrowIfNullOrEmpty(azureStorageConfig.AccountName, nameof(azureStorageConfig.AccountName));
+            ArgumentException.ThrowIfNullOrEmpty(azureStorageConfig.ContainerName, nameof(azureStorageConfig.ContainerName));
+
+            return await GetBlobClientUsingMiFic(
+                managedIdentityClientId,
+                tenantId,
+                clientId,
+                azureStorageConfig.AccountName,
+                azureStorageConfig.ContainerName
+            ).ConfigureAwait(false);
         }
 
         static public async Task UploadBlob(AzureStorageConfig azureStorageConfig, IConfiguration entraIdConfig, string blobName, string blobContents)
         {
-            var containerClient = await GetBlobClientUsingMiFic(
-                entraIdConfig["AzureAd:ClientCredentials:0:ManagedIdentityClientId"],
-                entraIdConfig["AzureAd:TenantId"],
-                entraIdConfig["AzureAd:ClientId"],
-                azureStorageConfig.AccountName,
-                azureStorageConfig.ContainerName
-            );
+            var containerClient = await GetContainerClient(entraIdConfig, azureStorageConfig);
             
             // Create the container if it does not exist.
             await containerClient.CreateIfNotExistsAsync();
@@ -61,29 +88,17 @@ namespace MiFicExamples.Helpers
 
         static public async Task DeleteBlob(AzureStorageConfig azureStorageConfig, IConfiguration entraIdConfig, string blobName)
         {
-            var containerClient = await GetBlobClientUsingMiFic(
-                entraIdConfig["AzureAd:ClientCredentials:0:ManagedIdentityClientId"],
-                entraIdConfig["AzureAd:TenantId"],
-                entraIdConfig["AzureAd:ClientId"],
-                azureStorageConfig.AccountName,
-                azureStorageConfig.ContainerName
-            );
+            var containerClient = await GetContainerClient(entraIdConfig, azureStorageConfig);
 
             var blob = containerClient.GetBlobClient(blobName);
-            blob.DeleteIfExists();            
+            await blob.DeleteIfExistsAsync();            
         }
 
         static public async Task<List<CommentBlobDTO>> GetBlobs(AzureStorageConfig azureStorageConfig, IConfiguration entraIdConfig)
         {
             
             List<CommentBlobDTO> blobs = new List<CommentBlobDTO>();
-            var containerClient = await GetBlobClientUsingMiFic(
-                entraIdConfig["AzureAd:ClientCredentials:0:ManagedIdentityClientId"],
-                entraIdConfig["AzureAd:TenantId"],
-                entraIdConfig["AzureAd:ClientId"],
-                azureStorageConfig.AccountName,
-                azureStorageConfig.ContainerName
-            );
+            var containerClient = await GetContainerClient(entraIdConfig, azureStorageConfig);
 
             await containerClient.CreateIfNotExistsAsync();
 
