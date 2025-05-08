@@ -31,7 +31,7 @@ Before configuring the Entra app, ensure your application's host environment in 
 #### Example: App services
 In Azure App Service (& Azure Functions), you can enable a managed identity via the Azure portal or CLI:
 
-- **Portal**: Navigate to your Web App or Function App in the Azure Portal. Under Settings, select Identity. Turn on the System-assigned identity (simply switch it to On and click Save) or add a User-assigned identity (select from your existing managed identities). Once enabled, Azure will generate a principal ID and (for system-assigned) a client ID for the identity.
+- **Portal**: Navigate to your Web App or Function App in the Azure Portal. Under Settings, select Identity. Add a User-assigned identity (or select from your existing identities).
 
 - **Azure CLI**: Use the CLI for automation. For example, to assign an existing user-assigned identity:
 
@@ -53,7 +53,7 @@ Next, configure the Microsoft Entra ID application to trust the managed identity
 
 3. **Add a Federated Identity Credential**: This is the key step that links the managed identity to the app:
 
-    - **Using Azure Portal**: In the Entra admin center (Azure AD portal), go to App Registrations > Your App > Certificates & secrets > Federated credentials (tab). Click Add credential. In the "Federated credential scenario" dropdown, select Managed Identity (if available). You will be prompted to choose the managed identity. Select the subscription and the specific User-assigned managed identity resource that you enabled earlier​. The portal will auto-fill the Issuer, Subject, and Audience for you. (If using a system-assigned identity, you may need to manually enter its object ID as the subject – the portal's Managed Identity picker is for user-assigned identities. Alternatively, use CLI/PowerShell for system-assigned as below.)
+    - **Using Azure Portal**: In the Entra admin center (Azure AD portal), go to App Registrations > Your App > Certificates & secrets > Federated credentials (tab). Click Add credential. In the "Federated credential scenario" dropdown, select Managed Identity (if available). You will be prompted to choose the managed identity. Select the subscription and the specific User-assigned managed identity resource that you enabled earlier​. The portal will auto-fill the Issuer, Subject, and Audience for you.
 
     - **Using PowerShell**: You can script this for automation. Ensure you have the Azure PowerShell Az module and run a command like:
 
@@ -146,7 +146,7 @@ string appClientId = "YOUR_APP_CLIENT_ID";
 // Tenant ID where the target resource resides (could be same as app's tenant)
 string resourceTenantId = "YOUR_RESOURCE_TENANT_ID";
 
-// Client ID of the managed identity (if using user-assigned; for system-assigned, you can provide nothing or use its client ID)
+// Client ID of the managed identity
 string managedIdentityClientId = "YOUR_MANAGED_IDENTITY_CLIENT_ID";
 
 // Audience for token exchange (use cloud-specific value if not in public Azure)
@@ -246,7 +246,7 @@ from azure.storage.blob import BlobServiceClient
 # Configurable values
 APP_CLIENT_ID      = "YOUR_APP_CLIENT_ID"
 RESOURCE_TENANT_ID = "YOUR_RESOURCE_TENANT_ID"
-MI_CLIENT_ID       = "YOUR_MANAGED_IDENTITY_CLIENT_ID"  # Use None for system-assigned
+MI_CLIENT_ID       = "YOUR_MANAGED_IDENTITY_CLIENT_ID" 
 AUDIENCE           = "api://AzureADTokenExchange"
 STORAGE_ACCOUNT    = "YOUR_STORAGE_ACCOUNT_NAME"
 CONTAINER_NAME     = "YOUR_CONTAINER_NAME"
@@ -309,7 +309,7 @@ public class BlobStorageFederationExample
     public static void main(String[] args) {
         // 1. Build ManagedIdentityCredential to get tokens from the managed identity
         ManagedIdentityCredential miCredential = new ManagedIdentityCredentialBuilder()
-                .clientId(MI_CLIENT_ID) // omit if using system-assigned
+                .clientId(MI_CLIENT_ID) // 
                 .build();
 
         // 2. Build a ClientAssertionCredential using the MI token as the assertion
@@ -359,7 +359,7 @@ import (
 func main() {
     appClientID           := "YOUR_APP_CLIENT_ID"
     tenantID              := "YOUR_RESOURCE_TENANT_ID"
-    managedIdentityClientID := "YOUR_MANAGED_IDENTITY_CLIENT_ID"  // user-assigned MI client ID; leave empty for system
+    managedIdentityClientID := "YOUR_MANAGED_IDENTITY_CLIENT_ID"  // user-assigned MI client ID
     scopes               := []string{"api://AzureADTokenExchange/.default"}
 
     // 1. Create a ManagedIdentityCredential to get the MI token
